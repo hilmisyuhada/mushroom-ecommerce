@@ -1,55 +1,111 @@
 # Mushroom Organik
 
-## Menjalankan dengan MySQL
+Aplikasi toko online PHP native untuk produk olahan jamur. Aplikasi memakai MySQL/MariaDB, session PHP, OpenStreetMap Nominatim untuk pencarian alamat, RajaOngkir untuk ongkir reguler, perhitungan jarak untuk ongkir instant, dan QRIS dengan upload bukti pembayaran.
 
-1. Pastikan PHP memiliki ekstensi `pdo_mysql` dan MySQL/MariaDB sedang berjalan.
-2. Import `database.sql` melalui phpMyAdmin atau terminal MySQL.
-	Jika database lama sudah pernah dibuat dari versi sebelumnya, import `database_migration_v2.sql`, `database_migration_v3.sql`, `database_migration_v4.sql`, lalu `database_migration_v5.sql` terlebih dahulu.
-		Untuk fitur pengiriman baru, alamat dipilih melalui OpenStreetMap. Tidak perlu import tabel wilayah; sistem mengambil destination RajaOngkir berdasarkan alamat hasil reverse geocoding dan menyimpan hasilnya di cache session.
+## Isi Repository
 
-kalau belum, ibu bisa impor dulu database luaran yg saya kasih
+- `index.php` - halaman toko, keranjang, checkout, ongkir, dan pembayaran.
+- `auth.php` - daftar dan login pelanggan/admin.
+- `admin/index.php` - dashboard pesanan, pembayaran, dan verifikasi bukti transfer.
+- `admin/products.php` - tambah, edit, dan nonaktifkan produk.
+- `user/index.php` - riwayat pesanan pelanggan.
+- `api/` - endpoint autentikasi, produk, order, ongkir, geocoding, dan admin.
+- `assets/images/products/` - gambar produk.
+- `assets/documents/payments/` - bukti pembayaran yang di-upload pelanggan.
+- `database.sql` - struktur database dan data produk awal.
+- `database_migration_v2.sql` sampai `database_migration_v6.sql` - migrasi untuk database versi lama.
+- `config.local.php` - konfigurasi lokal layanan ongkir.
 
-3. Jika konfigurasi lokal bukan default, set environment variable berikut:
+## Konfigurasi Repository Saat Ini
+
+`config.local.php` di repository sudah berisi konfigurasi layanan ongkir:
 
 ```text
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_NAME=mushroom_organik
-DB_USER=root
-DB_PASSWORD=
-RAJAONGKIR_API_KEY=isi_api_key_rajaongkir_di_server
 RAJAONGKIR_ORIGIN_CITY=Sei Mencirim, Sunggal, Deli Serdang
 RAJAONGKIR_ORIGIN_CITY_ID=41712
-RAJAONGKIR_COURIERS=jne:pos:tiki
-SHIPPING_ORIGIN_QUERY=Sei Mencirim, Sunggal, Deli Serdang, Sumatera Utara, Indonesia
-NOMINATIM_USER_AGENT=MushroomOrganik/1.0 (email-admin@example.com)
+RAJAONGKIR_COURIERS=spx:gosend
+SHIPPING_ORIGIN_QUERY=Bandar Meriah, Sukamaju, Sunggal, Deli Serdang, Sumatera Utara, Indonesia
 ```
 
-4. Jalankan dari folder proyek:
+Query `SHIPPING_ORIGIN_QUERY` sudah diuji dan dikenali OpenStreetMap. Alamat lengkap operasional toko adalah Jalan Dari Bandar Meriah ke Sukamaju, Bandar Meriah, Sukamaju, Sunggal, Kabupaten Deli Serdang, Sumatera Utara, 20134, Indonesia.
+
+Repository ini juga memuat API key RajaOngkir yang dipakai konfigurasi saat ini. Penghosting tidak perlu membuat konfigurasi ongkir baru, tetapi API key harus dianggap sebagai data rahasia dan hanya digunakan di server. Setelah website aktif, pemilik sebaiknya merotasi API key tersebut dari dashboard RajaOngkir karena secret di GitHub tercatat permanen dalam riwayat commit.
+
+## Syarat Hosting
+
+Penghosting perlu menyediakan:
+
+- PHP 8.1 atau lebih baru.
+- MySQL atau MariaDB.
+- HTTPS/SSL aktif.
+- Ekstensi PHP `pdo_mysql`, `fileinfo`, dan `curl`.
+- Permission tulis PHP untuk folder upload.
+- `upload_max_filesize` dan `post_max_size` minimal `6M`.
+
+Tidak diperlukan Node.js, Composer, framework PHP, atau proses build frontend.
+
+## Cara Deploy dari GitHub
+
+Berikan langkah berikut kepada penghosting.
+
+### 1. Clone repository
+
+Di server, masuk ke document root domain lalu jalankan:
+
+```bash
+git clone https://github.com/hilmisyuhada/mushroom-ecommerce.git mushroom-ecommerce
+cd mushroom-ecommerce
+```
+
+Jika hosting tidak menyediakan terminal/Git, download repository sebagai ZIP dari GitHub, extract, lalu upload seluruh isinya ke `public_html` atau document root domain.
+
+Struktur folder harus tetap seperti ini:
 
 ```text
-php -S localhost:8000
+public_html/
+  admin/
+  api/
+  assets/
+  user/
+  auth.php
+  config.php
+  config.local.php
+  index.php
 ```
 
-5. Buka `http://localhost:8000/index.php`.
+### 2. Buat database
 
-## Hosting publik
+Buat database dan user database khusus untuk aplikasi melalui cPanel, Plesk, atau phpMyAdmin. Catat:
 
-Berikan langkah berikut kepada pihak hosting atau developer yang melakukan deployment:
+```text
+DB_HOST
+DB_PORT
+DB_NAME
+DB_USER
+DB_PASSWORD
+```
 
-1. Pastikan hosting menyediakan PHP 8.1 atau lebih baru, MySQL/MariaDB, SSL/HTTPS, serta ekstensi `pdo_mysql`, `fileinfo`, dan `curl`.
-2. Buat satu database dan satu user database khusus untuk aplikasi. Catat host, port, nama database, username, dan passwordnya.
-3. Upload seluruh isi folder proyek ke document root domain, misalnya `public_html`. Jangan mengubah struktur folder seperti `api/`, `admin/`, `user/`, dan `assets/`.
-4. Import `database.sql` ke database baru. Untuk database lama, jalankan migration secara berurutan sesuai versi yang belum pernah dijalankan.
-5. Atur environment variable server berikut. Nilai `DB_PASSWORD` dan `RAJAONGKIR_API_KEY` tidak boleh dikosongkan di hosting publik:
+Import `database.sql` ke database baru. Jika database sudah pernah dibuat dari versi lama, jangan mengulang `database.sql`; jalankan migration yang belum pernah dipakai secara berurutan:
+
+```text
+database_migration_v2.sql
+database_migration_v3.sql
+database_migration_v4.sql
+database_migration_v5.sql
+database_migration_v6.sql
+```
+
+### 3. Isi environment variable server
+
+Atur variable berikut di panel hosting atau konfigurasi PHP-FPM/Apache:
 
 ```text
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_NAME=mushroom_organik
-DB_USER=user_database
-DB_PASSWORD=password_database
-RAJAONGKIR_API_KEY=api_key_rajaongkir
+DB_NAME=nama_database_hosting
+DB_USER=user_database_hosting
+DB_PASSWORD=password_database_hosting
+RAJAONGKIR_API_KEY=01H9i2mT06fda067495b9edeXcNamw0i
 RAJAONGKIR_ORIGIN_CITY=Sei Mencirim, Sunggal, Deli Serdang
 RAJAONGKIR_ORIGIN_CITY_ID=41712
 RAJAONGKIR_COURIERS=spx:gosend
@@ -57,44 +113,113 @@ SHIPPING_ORIGIN_QUERY=Bandar Meriah, Sukamaju, Sunggal, Deli Serdang, Sumatera U
 NOMINATIM_USER_AGENT=MushroomOrganik/1.0 (email-admin@example.com)
 ```
 
-6. Jika hosting tidak menyediakan environment variable, salin `config.local.php` menjadi konfigurasi lokal server dan isi kredensial database di sana. Jangan mengunggah API key asli ke repository publik; API key yang pernah tersimpan di file lokal sebaiknya dibuat ulang atau dirotasi.
-7. Pastikan folder berikut dapat ditulis oleh PHP/web server karena dipakai untuk upload gambar produk dan bukti pembayaran:
+`DB_PASSWORD` wajib diisi dengan password database hosting. Jangan memakai password database lokal Laragon.
+
+Jika panel hosting tidak menyediakan environment variable, minta penghosting menyesuaikan sumber konfigurasi di `config.php` atau menyediakan file konfigurasi server yang tidak dapat diakses publik. Jangan menampilkan password database di README atau mengirimkannya melalui repository publik.
+
+### 4. Atur permission folder upload
+
+PHP harus dapat membuat file di dua folder ini:
 
 ```text
 assets/images/products/
 assets/documents/payments/
 ```
 
-8. Atur `upload_max_filesize` dan `post_max_size` minimal 6M, lalu restart PHP-FPM/Apache bila pengaturan PHP diubah.
-9. Aktifkan HTTPS dan pastikan domain membuka `index.php`. Tidak diperlukan framework atau proses build Node.js.
-10. Buat akun melalui `auth.php`, lalu jadikan admin sekali melalui phpMyAdmin:
+Permission umum yang dapat dicoba adalah `755`. Jika web server tetap tidak dapat menulis, penghosting dapat memakai permission sesuai kebijakan server, biasanya `775` dengan owner/group web server yang benar.
 
-```sql
-UPDATE users SET role = 'admin' WHERE email = 'email-admin@contoh.com';
+### 5. Aktifkan HTTPS dan PHP upload
+
+Pasang SSL pada domain, lalu pastikan nilai PHP berikut minimal:
+
+```ini
+upload_max_filesize = 6M
+post_max_size = 6M
 ```
 
-11. Uji setelah online: pendaftaran/login, tambah produk dari admin, pencarian alamat toko dan alamat pembeli di peta, hitung ongkir instant/reguler, upload bukti pembayaran, buka bukti dari `admin/index.php`, serta checkout kedua dengan keranjang baru.
+Restart PHP-FPM/Apache jika diperlukan. HTTPS penting karena login, session, CSRF token, dan upload bukti pembayaran berjalan melalui website.
 
-Jika muncul pesan `Database belum terhubung`, periksa environment variable database. Jika alamat atau ongkir gagal, periksa `SHIPPING_ORIGIN_QUERY`, API key RajaOngkir, akses keluar HTTPS dari server, dan `NOMINATIM_USER_AGENT`.
+### 6. Buat akun admin
 
-## Alur akun dan pesanan
+Buat akun melalui halaman:
 
-1. Pelanggan membuat akun atau login melalui `auth.php`.
-2. Checkout hanya dapat dilakukan setelah login. Server mengambil ulang harga dan produk dari database, lalu menyimpan order milik akun tersebut.
-3. Pembayaran dilakukan melalui QRIS. Pelanggan mengunggah bukti pembayaran, lalu admin memverifikasi statusnya dari dashboard.
-4. Buat akun admin melalui halaman daftar biasa, kemudian ubah role akun tersebut sekali melalui phpMyAdmin:
-
-```sql
-UPDATE users SET role = 'admin' WHERE email = 'email-admin@contoh.com';
+```text
+https://domain-anda.com/auth.php
 ```
 
-5. Login dengan akun admin dan buka `admin/index.php` untuk melihat pembayaran serta mengubah status order menjadi `Sedang dikemas`, `Telah dikirim`, atau `Sudah sampai`.
-6. Dashboard user tersedia di `user/index.php` untuk melihat riwayat pesanan dan status pembayaran.
-7. Kelola produk admin tersedia di `admin/products.php` untuk menambah, mengedit, atau menonaktifkan produk.
+Setelah akun dibuat, ubah role melalui phpMyAdmin:
 
-Harga produk selalu diambil ulang dari tabel `products` di server. Password disimpan menggunakan `password_hash`, endpoint sensitif menggunakan session dan CSRF token, serta file bukti diberi nama acak. Pencarian alamat dan reverse geocoding memakai OpenStreetMap Nominatim dan disimpan di session agar tidak diulang. Ongkir instant dihitung dari jarak Haversine; ongkir reguler menggunakan alamat OSM untuk mencari destination dan melakukan satu hit tarif RajaOngkir gabungan, lalu hasilnya di-cache.
+```sql
+UPDATE users
+SET role = 'admin'
+WHERE email = 'email-admin@contoh.com';
+```
 
+Login admin melalui `auth.php`, lalu buka:
 
-API key jangan ditulis di source code. Atur `RAJAONGKIR_API_KEY` sebagai environment variable server. ID kota asal dicari otomatis berdasarkan `RAJAONGKIR_ORIGIN_CITY` (default `Medan`), jadi `RAJAONGKIR_ORIGIN_CITY_ID` tidak perlu diisi. Untuk deployment publik, aktifkan HTTPS dan gunakan password database non-kosong.
+```text
+https://domain-anda.com/admin/index.php
+```
 
+### 7. Uji website setelah online
 
+Penghosting wajib menguji:
+
+1. Halaman toko dapat dibuka.
+2. Daftar, login, logout, dan session berjalan.
+3. Admin dapat menambah produk dan upload gambar.
+4. Pencarian alamat pembeli menemukan hasil dari OpenStreetMap.
+5. Ongkir instant menggunakan lokasi asal Bandar Meriah/Sukamaju.
+6. Ongkir reguler berhasil mengambil tarif RajaOngkir.
+7. Checkout pertama dapat meng-upload bukti pembayaran.
+8. Admin dapat membuka tautan bukti pembayaran dan mengubah status.
+9. Pelanggan dapat melihat riwayat order.
+10. Checkout kedua tidak memakai harga atau ongkir checkout pertama.
+
+## Alur Akun dan Pesanan
+
+1. Pelanggan mendaftar atau login melalui `auth.php`.
+2. Produk ditambahkan ke keranjang di `index.php`.
+3. Checkout memvalidasi ulang harga produk dari database melalui server.
+4. Pelanggan memilih alamat dan layanan pengiriman.
+5. Pelanggan membayar melalui QRIS dan meng-upload bukti pembayaran.
+6. Admin memeriksa bukti di `admin/index.php`.
+7. Admin dapat mengubah status pembayaran dan status pesanan.
+8. Pelanggan melihat status terbaru melalui `user/index.php`.
+
+## Troubleshooting
+
+### Database belum terhubung
+
+Periksa `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, dan `DB_PASSWORD`. Pastikan user database memiliki akses ke database tersebut.
+
+### Alamat asal atau ongkir instant tidak terdeteksi
+
+Pastikan nilai berikut tidak diubah menjadi alamat jalan yang terlalu panjang:
+
+```text
+SHIPPING_ORIGIN_QUERY=Bandar Meriah, Sukamaju, Sunggal, Deli Serdang, Sumatera Utara, Indonesia
+```
+
+Server juga harus dapat mengakses `https://nominatim.openstreetmap.org` melalui HTTPS.
+
+### Ongkir reguler gagal
+
+Periksa `RAJAONGKIR_API_KEY`, `RAJAONGKIR_ORIGIN_CITY_ID`, nama courier, dan akses keluar server ke `https://rajaongkir.komerce.id`.
+
+### Upload gambar atau bukti pembayaran gagal
+
+Periksa permission folder upload, `upload_max_filesize`, `post_max_size`, ekstensi `fileinfo`, serta batas ukuran file 5 MB yang diterapkan aplikasi.
+
+### Halaman API menampilkan error 500
+
+Periksa PHP error log hosting. Pastikan PHP 8.1+, `pdo_mysql`, `fileinfo`, dan `curl` aktif.
+
+## Keamanan Setelah Deployment
+
+- Aktifkan HTTPS sebelum website dipakai publik.
+- Gunakan password database yang kuat dan khusus untuk aplikasi.
+- Rotasi API key RajaOngkir setelah deployment karena key saat ini pernah disimpan di repository GitHub.
+- Jangan mengubah permission upload menjadi `777` kecuali benar-benar diperlukan dan disetujui penghosting.
+- Batasi akses akun admin dan gunakan password admin yang kuat.
+- Jangan menghapus validasi CSRF, validasi upload, atau validasi harga server-side.
