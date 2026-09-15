@@ -45,7 +45,7 @@ INSERT INTO store_settings (setting_key, setting_value) VALUES
 ('about_description', 'Mushroom Organik hadir dengan semangat mengembangkan jamur tiram menjadi produk pangan yang berkualitas, inovatif, dan memiliki nilai tambah.'),
 ('about_badge_title', 'Integrated Healthy Food Ecosystem'),
 ('about_badge_text', 'Menghubungkan hulu ke hilir dalam pangan sehat, plant-based, natural, dan shelf stable.'),
-('contact_whatsapp', '6282168576196'),
+('contact_whatsapp', '6282168576896'),
 ('contact_email', 'bestonesolution.global@gmail.com'),
 ('contact_instagram', 'bosglobal.id')
 ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value);

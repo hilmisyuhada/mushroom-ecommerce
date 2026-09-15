@@ -13,6 +13,7 @@ Aplikasi toko online PHP native untuk produk olahan jamur. Aplikasi memakai MySQ
 - `assets/images/products/` - gambar produk.
 - `assets/documents/payments/` - bukti pembayaran yang di-upload pelanggan.
 - `database.sql` - struktur database dan data produk awal.
+- `database_seeder_admin.sql` - akun admin awal dan nomor WhatsApp toko.
 - `database_migration_v2.sql` sampai `database_migration_v6.sql` - migrasi untuk database versi lama.
 - `config.local.php` - konfigurasi lokal layanan ongkir.
 
@@ -139,7 +140,26 @@ post_max_size = 6M
 
 Restart PHP-FPM/Apache jika diperlukan. HTTPS penting karena login, session, CSRF token, dan upload bukti pembayaran berjalan melalui website.
 
-### 6. Buat akun admin
+### 6. Jalankan seeder admin
+
+Setelah `database.sql` atau seluruh migration selesai, import `database_seeder_admin.sql` melalui phpMyAdmin. Seeder aman dijalankan ulang dan akan membuat atau memperbarui akun admin.
+
+Kredensial awal:
+
+```text
+Email: admin@mushroomorganik.com
+Password: MushroomAdmin2026!
+```
+
+Login admin melalui:
+
+```text
+https://domain-anda.com/admin/login.php
+```
+
+Segera ganti password setelah deployment.
+
+### 7. Buat akun admin manual jika seeder tidak dipakai
 
 Buat akun melalui halaman:
 
@@ -161,7 +181,7 @@ Login admin melalui `auth.php`, lalu buka:
 https://domain-anda.com/admin/index.php
 ```
 
-### 7. Uji website setelah online
+### 8. Uji website setelah online
 
 Penghosting wajib menguji:
 

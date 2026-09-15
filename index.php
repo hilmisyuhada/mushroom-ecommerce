@@ -9,7 +9,7 @@ $aboutTitle = $storeSettings['about_title'] ?? 'Dari Budidaya Jamur hingga Produ
 $aboutDescription = $storeSettings['about_description'] ?? 'Mushroom Organik hadir dengan semangat mengembangkan jamur tiram menjadi produk pangan yang berkualitas, inovatif, dan memiliki nilai tambah.';
 $aboutBadgeTitle = $storeSettings['about_badge_title'] ?? 'Integrated Healthy Food Ecosystem';
 $aboutBadgeText = $storeSettings['about_badge_text'] ?? 'Menghubungkan hulu ke hilir dalam pangan sehat, plant-based, natural, dan shelf stable.';
-$contactWhatsapp = preg_replace('/\D+/', '', (string) ($storeSettings['contact_whatsapp'] ?? '6282168576196')) ?: '6282168576196';
+$contactWhatsapp = preg_replace('/\D+/', '', (string) ($storeSettings['contact_whatsapp'] ?? '82168576196')) ?: '6282168576196';
 function catalogEscape(mixed $value): string
 {
     return htmlspecialchars((string) ($value ?? ''), ENT_QUOTES, 'UTF-8');
@@ -152,6 +152,7 @@ function catalogEscape(mixed $value): string
             align-items: center;
             justify-content: space-between;
             gap: 30px;
+            min-width: 0;
         }
 
         .logo {
@@ -219,7 +220,10 @@ function catalogEscape(mixed $value): string
             display: flex;
             align-items: center;
             gap: 12px;
+            min-width: 0;
         }
+
+        .account-link { white-space: nowrap; }
 
         .search {
             width: 225px;
@@ -1085,6 +1089,9 @@ function catalogEscape(mixed $value): string
 
         @media (max-width: 1000px) {
 
+            .nav-content { gap: 14px; }
+            .nav-actions { margin-left: auto; }
+
             .nav-menu {
                 display: none;
             }
@@ -1124,6 +1131,14 @@ function catalogEscape(mixed $value): string
                 display: none;
             }
 
+            .nav-content {
+                height: auto;
+                min-height: 70px;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                gap: 10px;
+            }
+
             .logo {
                 min-width: auto;
             }
@@ -1135,6 +1150,21 @@ function catalogEscape(mixed $value): string
             .search {
                 display: none;
             }
+
+            .nav-actions { gap: 7px; }
+            .nav-actions .account-link {
+                width: 38px;
+                height: 38px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0;
+                border: 1px solid var(--border);
+                border-radius: 9px;
+            }
+            .nav-actions .account-link i { font-size: 14px; }
+            .nav-actions .account-link[href="logout.php"] { display: none; }
+            .cart { flex: 0 0 38px; width: 38px; height: 38px; }
 
             .hero h1 {
                 font-size: 38px;
@@ -1312,7 +1342,7 @@ function catalogEscape(mixed $value): string
             </div>
 
             <div class="topbar-right">
-                <a href="https://wa.me/6282168576196?text=Halo%20Bos%20Global%2C%20saya%20ingin%20bertanya%20tentang%20produk%20Mushroom%20Organik." target="_blank" rel="noopener">
+                <a href="https://wa.me/<?= catalogEscape($contactWhatsapp) ?>?text=<?= rawurlencode('Halo Bos Global, saya ingin bertanya tentang produk Mushroom Organik.') ?>" target="_blank" rel="noopener">
                     <i class="fa-brands fa-whatsapp"></i>
                     WhatsApp
                 </a>
@@ -2102,7 +2132,7 @@ function catalogEscape(mixed $value): string
                         Hubungi Kami
                     </h3>
 
-                    <a href="https://wa.me/6282168576196?text=Halo%20Bos%20Global%2C%20saya%20ingin%20bertanya%20tentang%20produk%20Mushroom%20Organik." target="_blank" rel="noopener">
+                    <a href="https://wa.me/<?= catalogEscape($contactWhatsapp) ?>?text=<?= rawurlencode('Halo Bos Global, saya ingin bertanya tentang produk Mushroom Organik.') ?>" target="_blank" rel="noopener">
                         <i class="fa-brands fa-whatsapp"></i>&nbsp; WhatsApp: 0821-6857-6196
                     </a>
 
