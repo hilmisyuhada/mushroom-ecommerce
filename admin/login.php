@@ -1,0 +1,11 @@
+<?php
+require_once __DIR__ . '/../config.php';
+if (currentUser() && currentUser()['role'] === 'admin') {
+    header('Location: products.php');
+    exit;
+}
+?><!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Login Admin | Mushroom Organik</title><style>
+:root{--green:#2f6b3f;--dark:#1f4d2e;--cream:#f8f6ed;--line:#dfe5dc}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:var(--cream);font:14px Arial,sans-serif;color:#1f2d22}.box{width:min(420px,100%);background:#fff;border:1px solid var(--line);border-radius:12px;padding:32px;box-shadow:0 16px 40px #1f4d2e18}h1{margin:0;color:var(--dark)}p{color:#69736b;line-height:1.5}label{display:block;margin:17px 0 6px;font-weight:700}input{width:100%;padding:12px;border:1px solid var(--line);border-radius:7px;font:inherit}button{width:100%;padding:13px;margin-top:20px;border:0;border-radius:7px;background:var(--dark);color:#fff;font-weight:700;cursor:pointer}.error{min-height:22px;color:#a33}a{color:var(--green)}
+</style></head><body><main class="box"><p><a href="../index.php">&larr; Kembali ke toko</a></p><h1>Login Admin</h1><p>Gerbang khusus pengelola toko dan pembayaran.</p><form id="form"><label for="email">Email admin</label><input id="email" type="email" required autocomplete="username"><label for="password">Password</label><input id="password" type="password" required minlength="8" autocomplete="current-password"><p id="error" class="error"></p><button>Login admin</button></form></main><script>
+document.getElementById('form').addEventListener('submit',async event=>{event.preventDefault();const error=document.getElementById('error');error.textContent='';try{const response=await fetch('../api/auth.php?action=login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:document.getElementById('email').value,password:document.getElementById('password').value,expectedRole:'admin'})});const result=await response.json();if(!response.ok||!result.success)throw new Error(result.message||'Login admin gagal.');location.href='products.php';}catch(exception){error.textContent=exception.message;}});
+</script></body></html>
